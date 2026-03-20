@@ -588,7 +588,91 @@ function renderizarGrafico(labels, data) {
 }
 
 // Impressão Adaptada (Omitida para manter o código enxuto, mantenha a sua lógica de impressão antiga e adicione a Categoria nas colunas da Tabela)
-function imprimirFicha(id) { alert("Use sua função de impressão original atualizando a tabela com p.categoria"); }
+function imprimirFicha(id) {
+    let c = clientesGlobais.find(cliente => cliente.id === id);
+    if(!c) return;
+
+    // Busca os pagamentos ordenados pela data
+    db.collection("clientes").doc(id).collection("pagamentos").orderBy("timestamp", "desc").get()
+    .then(snapshot => {
+        let pagamentosHtml = "";
+        let totalPago = 0;
+
+        snapshot.forEach(doc => {
+            let p = doc.data();
+            let valNum = parseFloat(p.valor.replace(/\./g, '').replace(',', '.'));
+            if(!isNaN(valNum)) totalPago += valNum;
+            
+            let cat = p.categoria || 'Outros'; // Garante que puxa a categoria nova
+
+            // Adiciona a linha na tabela, agora com a Categoria
+            pagamentosHtml += `
+            <tr>
+                <td>${p.data}</td>
+                <td><b>${cat}</b></td>
+                <td>R$ ${p.valor}</td>
+                <td>${p.pix || '-'}</td>
+            </tr>`;
+        });
+
+        if(pagamentosHtml === "") {
+            pagamentosHtml = "<tr><td colspan='4' style='text-align:center;'>Nenhum pagamento registrado.</td></tr>";
+        }
+
+        let totalFormatado = totalPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+        let textoEndereco = "Não informado";
+        if (c.rua || c.cep) {
+            let num = c.numero ? c.numero : "S/N";
+            let comp = c.complemento ? " - " + c.complemento : "";
+            textoEndereco = `${c.rua || ''}, ${num}${comp} <br> ${c.bairro || ''} - ${c.cidade || ''}/${c.uf || ''} <br> ${c.cep ? 'CEP: '+c.cep : ''}`;
+        }
+
+        let htmlImpresso = `
+            <div class="print-header">
+                <h2>Ficha de Cliente - Despachante</h2>
+                <h3>${c.nome}</h3>
+            </div>
+            
+            <div class="print-section">
+                <h4>Dados Pessoais</h4>
+                <p><strong>Telefone:</strong> ${c.telefone || 'Não informado'}</p>
+                <p><strong>Email:</strong> ${c.email || 'Não informado'}</p>
+                <p><strong>RG:</strong> ${c.rg || 'Não informado'} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>CPF:</strong> ${c.cpf || 'Não informado'}</p>
+                <p><strong>Lotes / Serviços:</strong> ${c.lotes || 'Não informado'}</p>
+            </div>
+            
+            <div class="print-section">
+                <h4>Endereço Completo</h4>
+                <p>${textoEndereco}</p>
+            </div>
+            
+            <div class="print-section">
+                <h4>Histórico Financeiro</h4>
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Data</th>
+                            <th style="width: 25%;">Categoria</th>
+                            <th style="width: 20%;">Valor</th>
+                            <th style="width: 40%;">Observação / Destino</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pagamentosHtml}
+                    </tbody>
+                </table>
+                <div class="print-total">
+                    Total Pago: R$ ${totalFormatado}
+                </div>
+            </div>
+        `;
+
+        document.getElementById("printArea").innerHTML = htmlImpresso;
+        window.print(); 
+    });
+}
+
 
 </script>
 </body>
