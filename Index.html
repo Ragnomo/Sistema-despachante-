@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema Clientes - Despachante</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+
+<style>
+    /* Estilo Base Escuro */
+    body { 
+        font-family: 'Roboto', sans-serif; 
+        background-color: #0b0c10;
+        background-image: radial-gradient(circle at center, #1a1f24 0%, #050505 100%);
+        color: #c5c6c7; 
+        margin: 0; 
+        padding: 20px; 
+        min-height: 100vh;
+    }
+
+    h2, h3, h4 { 
+        font-family: 'Bebas Neue', sans-serif; 
+        color: #ffffff; 
+        font-size: 3rem; 
+        letter-spacing: 3px; 
+        margin-top: 0;
+        margin-bottom: 20px; 
+        text-transform: uppercase; 
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 10px;
+    }
+
+    h4 { font-size: 1.8rem; margin-top: 20px; border: none; color: #5c946e; margin-bottom: 5px; padding-bottom: 0;}
+
+    .container { 
+        max-width: 500px; 
+        margin: 40px auto; 
+        background: rgba(15, 17, 20, 0.85); 
+        padding: 40px; 
+        border-radius: 4px; 
+        border-left: 3px solid #5c946e; 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+    }
+
+    input, select { 
+        width: 100%; 
+        padding: 15px; 
+        margin-top: 10px; 
+        margin-bottom: 10px;
+        background: rgba(0, 0, 0, 0.6); 
+        border: 1px solid #333; 
+        color: #fff; 
+        font-size: 1rem;
+        font-family: 'Roboto', sans-serif;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+    }
+
+    select { cursor: pointer; appearance: none; }
+    select option { background: #1a1f24; color: #fff; }
+
+    input:focus, select:focus {
+        border-color: #5c946e; outline: none; box-shadow: 0 0 10px rgba(92, 148, 110, 0.2);
+    }
+    input::placeholder { color: #666; }
+
+    .filtros-area { display: flex; gap: 10px; margin-bottom: 20px; }
+    .filtros-area input, .filtros-area select { margin-bottom: 0; }
+
+    .flex-row { display: flex; gap: 10px; }
+    .flex-row > * { flex: 1; }
+
+    button { 
+        width: 100%; padding: 15px; margin-top: 20px; 
+        background: transparent; color: #5c946e; 
+        border: 1px solid #5c946e; 
+        font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem;
+        letter-spacing: 2px; cursor: pointer; 
+        border-radius: 2px; transition: all 0.3s ease;
+    }
+    button:hover { background: #5c946e; color: #000; }
+
+    #sistema_wrapper {
+        display: flex; flex-wrap: wrap; gap: 20px;
+        justify-content: center; max-width: 1200px; margin: 0 auto;
+    }
+    .painel { flex: 1; min-width: 300px; }
+
+    .cliente { 
+        background: rgba(0, 0, 0, 0.5); padding: 20px; 
+        margin-top: 15px; border-radius: 4px; border: 1px solid #222;
+        transition: border 0.3s ease;
+    }
+    .cliente:hover { border-color: #444; }
+    .cliente b { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #fff; letter-spacing: 1px; }
+
+    .pagar { border-color: #fbd46d; color: #fbd46d; font-size: 1.2rem; padding: 10px; margin-top: 10px; }
+    .pagar:hover { background: #fbd46d; color: #000; }
+
+    .delete { border-color: #e23e57; color: #e23e57; font-size: 1.2rem; padding: 10px; margin-top: 10px; }
+    .delete:hover { background: #e23e57; color: #fff; }
+
+    .btn-secundario { border-color: #666; color: #aaa; }
+    .btn-secundario:hover { background: #666; color: #fff; }
+    
+    .btn-print { border-color: #fff; color: #fff; }
+    .btn-print:hover { background: #fff; color: #000; }
+
+    /* ESTILOS DA FICHA DO CLIENTE (MODAL) */
+    .modal-overlay {
+        display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); z-index: 1000;
+        justify-content: center; align-items: center; backdrop-filter: blur(5px);
+    }
+    .modal-content {
+        background: #111; padding: 40px; border-radius: 4px;
+        border-left: 3px solid #fbd46d; width: 90%; max-width: 600px;
+        max-height: 90vh; overflow-y: auto; position: relative;
+        box-shadow: 0 0 50px rgba(0,0,0,1);
+    }
+    .modal-content p { font-size: 1.1rem; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.5; }
+    .modal-content strong { color: #fbd46d; }
+    .close-btn {
+        position: absolute; top: 10px; right: 20px;
+        background: transparent; border: none; color: #e23e57;
+        font-size: 2.5rem; cursor: pointer; padding: 0; width: auto; margin: 0;
+    }
+    .close-btn:hover { background: transparent; color: #ff5252; }
+
+    /* ESTILOS EXCLUSIVOS PARA GERAR O PDF/IMPRESSÃO LIMPO */
+    #printArea { display: none; }
+    @media print {
+        body { background: white !important; color: black !important; background-image: none !important; padding: 0; margin: 0; }
+        #loginBox, #sistema, #modalPerfil { display: none !important; }
+        #printArea { display: block !important; width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif; }
+        .print-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+        .print-header h2 { color: black; font-family: Arial, sans-serif; font-size: 24px; letter-spacing: normal; margin: 0; border: none; }
+        .print-header h3 { color: #555; font-family: Arial, sans-serif; font-size: 20px; letter-spacing: normal; margin-top: 5px; border: none; }
+        .print-section { margin-bottom: 25px; }
+        .print-section h4 { color: black; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 10px; font-family: Arial, sans-serif; font-size: 16px; }
+        .print-section p { font-size: 14px; margin: 5px 0; border: none; line-height: 1.6; }
+        .print-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .print-table th, .print-table td { border: 1px solid #aaa; padding: 10px; text-align: left; font-size: 14px; }
+        .print-table th { background: #f0f0f0; }
+        .print-total { text-align: right; margin-top: 15px; font-size: 18px; font-weight: bold; }
+    }
+</style>
+</head>
+
+<body>
+
+<div id="loginBox" class="container">
+    <h2>Acesso Restrito</h2>
+    <input id="login" placeholder="Login">
+    <input id="senha" type="password" placeholder="Senha">
+    <button onclick="logar()">Entrar no Sistema</button>
+</div>
+
+<div id="sistema" style="display:none;">
+    <div id="sistema_wrapper">
+        
+        <div class="container painel">
+            <h2>Novo Registro</h2>
+            
+            <h4>Dados Pessoais</h4>
+            <input id="nome" placeholder="Nome Completo">
+            <input id="telefone" placeholder="Telefone" oninput="mascaraTelefone(this)" maxlength="15">
+            <input id="email" placeholder="Email">
+            <div class="flex-row">
+                <input id="rg" placeholder="RG">
+                <input id="cpf" placeholder="CPF" oninput="mascaraCPF(this)" maxlength="14">
+            </div>
+            
+            <h4>Endereço</h4>
+            <input id="cep" placeholder="CEP" oninput="mascaraCEP(this, 'rua', 'bairro', 'cidade', 'uf', 'numero')" maxlength="9">
+            <input id="rua" placeholder="Rua / Logradouro">
+            <div class="flex-row">
+                <input id="numero" placeholder="Número" style="flex: 1;">
+                <input id="complemento" placeholder="Complemento" style="flex: 2;">
+            </div>
+            <input id="bairro" placeholder="Bairro">
+            <div class="flex-row">
+                <input id="cidade" placeholder="Cidade" style="flex: 3;">
+                <input id="uf" placeholder="UF" style="flex: 1;" maxlength="2">
+            </div>
+
+            <h4>Serviço</h4>
+            <input id="lotes" placeholder="Lotes / Serviços">
+            
+            <button onclick="salvar()">Salvar Cliente</button>
+        </div>
+
+        <div class="container painel">
+            <h3>Clientes Ativos</h3>
+            
+            <div class="filtros-area">
+                <input type="text" id="buscaNome" placeholder="Pesquisar cliente..." oninput="renderizarClientes()">
+                <select id="ordenacao" onchange="renderizarClientes()">
+                    <option value="recentes">Mais Recentes</option>
+                    <option value="az">Ordem Alfabética (A-Z)</option>
+                    <option value="za">Ordem Alfabética (Z-A)</option>
+                    <option value="antigos">Mais Antigos</option>
+                </select>
+            </div>
+
+            <div id="lista"></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- TELA DA FICHA DO CLIENTE (POP-UP) -->
+<div id="modalPerfil" class="modal-overlay">
+    <div class="modal-content" id="conteudoPerfil">
+        <!-- Preenchido via Javascript -->
+    </div>
+</div>
+
+<!-- ÁREA INVISÍVEL ONDE O PDF É MONTADO -->
+<div id="printArea"></div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<script>
+var firebaseConfig = {
+  apiKey: "AIzaSyAtbAHoRRRqEo0R1hMqXQmESy2n06HnL_k",
+  authDomain: "ll-despachante-clientes.firebaseapp.com",
+  projectId: "ll-despachante-clientes",
+  storageBucket: "ll-despachante-clientes.firebasestorage.app",
+  messagingSenderId: "328309491662",
+  appId: "1:328309491662:web:ae5810008ec6fdcfd14d9f"
+};
+
+firebase.initializeApp(firebaseConfig);
+var db = firebase.firestore();
+var clientesGlobais = [];
+var pagamentoEditandoId = null; // Variável para controlar a edição do pagamento
+
+// --- MÁSCARAS ---
+function mascaraCPF(input) {
+    let v = input.value.replace(/\D/g, '').substring(0, 11);
+    if (v.length > 9) v = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    else if (v.length > 6) v = v.replace(/(\d{3})(\d{3})(\d{1,3})/, "$1.$2.$3");
+    else if (v.length > 3) v = v.replace(/(\d{3})(\d{1,3})/, "$1.$2");
+    input.value = v;
+}
+
+function mascaraTelefone(input) {
+    let v = input.value.replace(/\D/g, '').substring(0, 11);
+    if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+    else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+    else if (v.length > 2) v = v.replace(/^(\d{2})(\d{0,5})/, "($1) $2");
+    input.value = v;
+}
+
+function mascaraCEP(input, idRua, idBairro, idCidade, idUf, idNumero) {
+    let v = input.value.replace(/\D/g, '').substring(0, 8);
+    if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, "$1-$2");
+    input.value = v;
+
+    if(v.length === 9) {
+        fetch(`https://viacep.com.br/ws/${v.replace('-', '')}/json/`)
+        .then(resposta => resposta.json())
+        .then(dados => {
+            if(!dados.erro) {
+                document.getElementById(idRua).value = dados.logradouro || '';
+                document.getElementById(idBairro).value = dados.bairro || '';
+                document.getElementById(idCidade).value = dados.localidade || '';
+                document.getElementById(idUf).value = dados.uf || '';
+                document.getElementById(idNumero).focus(); 
+            }
+        }).catch(erro => console.log("Erro ao buscar CEP"));
+    }
+}
+
+function mascaraData(input) {
+    let valor = input.value.replace(/\D/g, '').substring(0, 8);
+    if (valor.length >= 5) input.value = `${valor.slice(0, 2)}/${valor.slice(2, 4)}/${valor.slice(4)}`;
+    else if (valor.length >= 3) input.value = `${valor.slice(0, 2)}/${valor.slice(2)}`;
+    else input.value = valor;
+}
+
+function mascaraMoeda(input) {
+    let valor = input.value.replace(/\D/g, ''); 
+    if (valor === '') { input.value = ''; return; }
+    valor = (valor / 100).toFixed(2) + ''; 
+    valor = valor.replace(".", ","); 
+    valor = valor.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); 
+    input.value = valor;
+}
+
+// --- SISTEMA ---
+function logar(){
+  var l = document.getElementById("login").value;
+  var s = document.getElementById("senha").value;
+
+  if(l === "ll.despachante" && s === "Cia40028922."){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("sistema").style.display="block";
+    carregarClientes();
+  } else {
+    alert("Acesso Negado: Login ou senha incorretos.");
+  }
+}
+
+function salvar(){
+  var nome = document.getElementById("nome").value;
+  var telefone = document.getElementById("telefone").value;
+  var email = document.getElementById("email").value;
+  var rg = document.getElementById("rg").value;
+  var cpf = document.getElementById("cpf").value;
+  var lotes = document.getElementById("lotes").value;
+  var cep = document.getElementById("cep").value;
+  var rua = document.getElementById("rua").value;
+  var numero = document.getElementById("numero").value;
+  var complemento = document.getElementById("complemento").value;
+  var bairro = document.getElementById("bairro").value;
+  var cidade = document.getElementById("cidade").value;
+  var uf = document.getElementById("uf").value;
+
+  if(!nome) return alert("O nome é obrigatório.");
+
+  db.collection("clientes").add({
+    nome, telefone, email, rg, cpf, lotes,
+    cep, rua, numero, complemento, bairro, cidade, uf,
+    timestamp: Date.now() 
+  }).then(()=>{
+    alert("Registro salvo com sucesso!");
+    limpar();
+    carregarClientes(); 
+  });
+}
+
+function carregarClientes(){
+  db.collection("clientes").get().then(snapshot=>{
+    clientesGlobais = [];
+    snapshot.forEach(doc=>{
+      let c = doc.data();
+      c.id = doc.id;
+      if(!c.timestamp) c.timestamp = 0; 
+      clientesGlobais.push(c);
+    });
+    renderizarClientes();
+  });
+}
+
+function renderizarClientes(){
+    let lista = document.getElementById("lista");
+    let textoBusca = document.getElementById("buscaNome").value.toLowerCase();
+    let ordem = document.getElementById("ordenacao").value;
+
+    lista.innerHTML = "";
+
+    let clientesFiltrados = clientesGlobais.filter(c => 
+        c.nome.toLowerCase().includes(textoBusca)
+    );
+
+    if(ordem === "recentes") clientesFiltrados.sort((a, b) => b.timestamp - a.timestamp);
+    else if(ordem === "antigos") clientesFiltrados.sort((a, b) => a.timestamp - b.timestamp);
+    else if(ordem === "az") clientesFiltrados.sort((a, b) => a.nome.localeCompare(b.nome));
+    else if(ordem === "za") clientesFiltrados.sort((a, b) => b.nome.localeCompare(a.nome));
+
+    if(clientesFiltrados.length === 0){
+        lista.innerHTML = "<p style='color:#666; text-align:center;'>Nenhum cliente encontrado.</p>";
+        return;
+    }
+
+    clientesFiltrados.forEach(c => {
+      lista.innerHTML += `
+        <div class="cliente">
+          <b>${c.nome}</b><br><br>
+          Telefone: ${c.telefone || '---'}<br>
+          Lotes/Serviço: ${c.lotes || '---'}<br>
+
+          <button class="pagar" onclick="abrirPerfil('${c.id}')">📋 Abrir Ficha</button>
+          <button class="delete" onclick="deletar('${c.id}')">Excluir</button>
+        </div>
+      `;
+    });
+}
+
+function abrirPerfil(id) {
+    // Reseta variável de edição ao abrir perfil novo
+    pagamentoEditandoId = null; 
+
+    let c = clientesGlobais.find(cliente => cliente.id === id);
+    if(!c) return;
+
+    let modal = document.getElementById("modalPerfil");
+    let conteudo = document.getElementById("conteudoPerfil");
+
+    let textoEndereco = "Não informado";
+    if (c.rua || c.cep) {
+        let num = c.numero ? c.numero : "S/N";
+        let comp = c.complemento ? " - " + c.complemento : "";
+        textoEndereco = `${c.rua || ''}, ${num}${comp}<br>${c.bairro || ''} - ${c.cidade || ''}/${c.uf || ''}<br>${c.cep ? 'CEP: '+c.cep : ''}`;
+    }
+
+    conteudo.innerHTML = `
+        <button class="close-btn" onclick="fecharPerfil()">×</button>
+        
+        <h2 style="color:#fbd46d; border:none; margin:0;">${c.nome}</h2>
+        <hr style="border: 0; border-top: 1px solid #333; margin-top: 10px; margin-bottom: 20px;">
+        
+        <div style="display:flex; flex-wrap: wrap; gap: 20px;">
+            <div style="flex:1; min-width: 250px;">
+                <h4 style="font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 5px;">Dados Pessoais</h4>
+                <p><strong>Telefone:</strong> ${c.telefone || 'Não informado'}</p>
+                <p><strong>Email:</strong> ${c.email || 'Não informado'}</p>
+                <p><strong>RG:</strong> ${c.rg || 'Não informado'}</p>
+                <p><strong>CPF:</strong> ${c.cpf || 'Não informado'}</p>
+                <p><strong>Lotes/Serviços:</strong> ${c.lotes || 'Não informado'}</p>
+            </div>
+            
+            <div style="flex:1; min-width: 250px;">
+                <h4 style="font-size: 1.2rem; border-bottom: 1px solid #333; padding-bottom: 5px;">Endereço</h4>
+                <p style="margin-top: 10px;">${textoEndereco}</p>
+            </div>
+        </div>
+
+        <div style="display:flex; gap: 10px; margin-top: 15px;">
+            <button class="btn-secundario" onclick="abrirEdicaoPerfil('${id}')" style="font-size:1.2rem; padding:10px; margin-top:0;">✏️ Editar</button>
+            <button class="btn-print" onclick="imprimirFicha('${id}')" style="font-size:1.2rem; padding:10px; margin-top:0;">🖨️ PDF / Imprimir</button>
+        </div>
+        
+        <h3 style="margin-top: 30px; font-size: 2rem;">Financeiro</h3>
+        
+        <div class="flex-row" style="margin-bottom: 10px;">
+            <input id="data_pag_${id}" placeholder="Data (DD/MM/AAAA)" oninput="mascaraData(this)" style="margin:0;">
+            <input id="valor_pag_${id}" placeholder="Valor (R$)" oninput="mascaraMoeda(this)" style="margin:0;">
+        </div>
+        <input id="pix_pag_${id}" placeholder="Recebedor / Obs do Pagamento" style="margin-top:0;">
+        <button id="btn_salvar_pag_${id}" class="pagar" onclick="salvarPagamento('${id}')" style="margin-top:5px; margin-bottom: 20px;">Registrar Pagamento</button>
+        
+        <div id="listaPag_${id}"><i>Carregando pagamentos...</i></div>
+    `;
+
+    modal.style.display = "flex";
+    carregarPagamentosNoModal(id);
+}
+
+// --- FUNÇÕES DE EDIÇÃO E EXCLUSÃO DE PAGAMENTOS ---
+function carregarPagamentosNoModal(id) {
+    db.collection("clientes").doc(id).collection("pagamentos").get()
+    .then(snapshot=>{
+        var html="";
+        snapshot.forEach(doc=>{
+            var p = doc.data();
+            // Evita erros se houver aspas na observação
+            var pixSeguro = p.pix ? p.pix.replace(/'/g, "\\'") : ''; 
+            
+            html += `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(255,255,255,0.05); padding:10px; margin-top:5px; border-radius:4px;">
+                <div style="flex:1;">
+                    💰 <b>${p.data}</b> | R$ ${p.valor} <br> 
+                    <small style="color:#888;">Obs/Destino: ${p.pix || '-'}</small>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button onclick="prepararEdicaoPagamento('${id}', '${doc.id}', '${p.data}', '${p.valor}', '${pixSeguro}')" style="width:auto; padding:5px 10px; margin:0; font-size:1rem; border-color:#fbd46d; color:#fbd46d;" title="Editar">✏️</button>
+                    <button onclick="deletarPagamento('${id}', '${doc.id}')" style="width:auto; padding:5px 10px; margin:0; font-size:1rem; border-color:#e23e57; color:#e23e57;" title="Excluir">🗑️</button>
+                </div>
+            </div>`;
+        });
+        if(html === "") html = "<p style='color:#666'>Nenhum pagamento registrado.</p>";
+        document.getElementById("listaPag_"+id).innerHTML = html;
+    });
+}
+
+function prepararEdicaoPagamento(clienteId, pagamentoId, data, valor, pix) {
+    // Joga os dados do pagamento lá pros inputs de cima
+    document.getElementById("data_pag_"+clienteId).value = data;
+    document.getElementById("valor_pag_"+clienteId).value = valor;
+    document.getElementById("pix_pag_"+clienteId).value = pix;
+    
+    // Salva qual pagamento está sendo editado na variável global
+    pagamentoEditandoId = pagamentoId;
+    
+    // Muda a cara do botão
+    let btn = document.getElementById("btn_salvar_pag_"+clienteId);
+    btn.innerHTML = "💾 Atualizar Pagamento";
+    btn.style.borderColor = "#5c946e";
+    btn.style.color = "#5c946e";
+}
+
+function deletarPagamento(clienteId, pagamentoId) {
+    if(confirm("Tem certeza que deseja apagar este pagamento? Essa ação não pode ser desfeita.")) {
+        db.collection("clientes").doc(clienteId).collection("pagamentos").doc(pagamentoId).delete()
+        .then(() => {
+            carregarPagamentosNoModal(clienteId);
+        });
+    }
+}
+
+function salvarPagamento(id){
+  var dataInput = document.getElementById("data_pag_"+id);
+  var valorInput = document.getElementById("valor_pag_"+id);
+  var pixInput = document.getElementById("pix_pag_"+id);
+
+  if(!dataInput.value || !valorInput.value) return alert("Preencha a data e o valor!");
+
+  if (pagamentoEditandoId) {
+      // Se tiver ID gravado, Atualiza o existente
+      db.collection("clientes").doc(id).collection("pagamentos").doc(pagamentoEditandoId).update({
+        data: dataInput.value, 
+        valor: valorInput.value, 
+        pix: pixInput.value
+      }).then(()=>{
+        dataInput.value = "";
+        valorInput.value = "";
+        pixInput.value = "";
+        pagamentoEditandoId = null; // Zera a variável
+        
+        // Volta o botão ao normal
+        let btn = document.getElementById("btn_salvar_pag_"+id);
+        btn.innerHTML = "Registrar Pagamento";
+        btn.style.borderColor = "#fbd46d";
+        btn.style.color = "#fbd46d";
+        
+        carregarPagamentosNoModal(id);
+      });
+  } else {
+      // Se não, Cria um novo normal
+      db.collection("clientes").doc(id).collection("pagamentos").add({
+        data: dataInput.value, 
+        valor: valorInput.value, 
+        pix: pixInput.value
+      }).then(()=>{
+        dataInput.value = "";
+        valorInput.value = "";
+        pixInput.value = "";
+        carregarPagamentosNoModal(id);
+      });
+  }
+}
+
+// --- EDIÇÃO DE PERFIL E OUTRAS FUNÇÕES ---
+function abrirEdicaoPerfil(id) {
+    let c = clientesGlobais.find(cliente => cliente.id === id);
+    if(!c) return;
+
+    let conteudo = document.getElementById("conteudoPerfil");
+
+    conteudo.innerHTML = `
+        <button class="close-btn" onclick="abrirPerfil('${id}')">×</button>
+        <h2 style="color:#5c946e; border-color:#5c946e;">Editar Cliente</h2>
+        
+        <input id="edit_nome" value="${c.nome || ''}" placeholder="Nome Completo">
+        <input id="edit_telefone" value="${c.telefone || ''}" placeholder="Telefone" oninput="mascaraTelefone(this)" maxlength="15">
+        <input id="edit_email" value="${c.email || ''}" placeholder="Email">
+        
+        <div class="flex-row">
+            <input id="edit_rg" value="${c.rg || ''}" placeholder="RG">
+            <input id="edit_cpf" value="${c.cpf || ''}" placeholder="CPF" oninput="mascaraCPF(this)" maxlength="14">
+        </div>
+
+        <h4 style="font-size: 1.2rem;">Endereço</h4>
+        <input id="edit_cep" value="${c.cep || ''}" placeholder="CEP" oninput="mascaraCEP(this, 'edit_rua', 'edit_bairro', 'edit_cidade', 'edit_uf', 'edit_numero')" maxlength="9">
+        <input id="edit_rua" value="${c.rua || ''}" placeholder="Rua / Logradouro">
+        <div class="flex-row">
+            <input id="edit_numero" value="${c.numero || ''}" placeholder="Número" style="flex: 1;">
+            <input id="edit_complemento" value="${c.complemento || ''}" placeholder="Complemento" style="flex: 2;">
+        </div>
+        <input id="edit_bairro" value="${c.bairro || ''}" placeholder="Bairro">
+        <div class="flex-row">
+            <input id="edit_cidade" value="${c.cidade || ''}" placeholder="Cidade" style="flex: 3;">
+            <input id="edit_uf" value="${c.uf || ''}" placeholder="UF" style="flex: 1;" maxlength="2">
+        </div>
+
+        <h4 style="font-size: 1.2rem;">Serviço</h4>
+        <input id="edit_lotes" value="${c.lotes || ''}" placeholder="Lotes / Serviços">
+        
+        <button onclick="salvarEdicao('${id}')">💾 Salvar Alterações</button>
+        <button class="btn-secundario" onclick="abrirPerfil('${id}')">Cancelar</button>
+    `;
+}
+
+function salvarEdicao(id) {
+    var nome = document.getElementById("edit_nome").value;
+    var telefone = document.getElementById("edit_telefone").value;
+    var email = document.getElementById("edit_email").value;
+    var rg = document.getElementById("edit_rg").value;
+    var cpf = document.getElementById("edit_cpf").value;
+    var lotes = document.getElementById("edit_lotes").value;
+    var cep = document.getElementById("edit_cep").value;
+    var rua = document.getElementById("edit_rua").value;
+    var numero = document.getElementById("edit_numero").value;
+    var complemento = document.getElementById("edit_complemento").value;
+    var bairro = document.getElementById("edit_bairro").value;
+    var cidade = document.getElementById("edit_cidade").value;
+    var uf = document.getElementById("edit_uf").value;
+
+    if(!nome) return alert("O nome é obrigatório.");
+
+    db.collection("clientes").doc(id).update({
+        nome, telefone, email, rg, cpf, lotes,
+        cep, rua, numero, complemento, bairro, cidade, uf
+    }).then(()=>{
+        let c = clientesGlobais.find(cliente => cliente.id === id);
+        c.nome = nome; c.telefone = telefone; c.email = email; 
+        c.rg = rg; c.cpf = cpf; c.lotes = lotes;
+        c.cep = cep; c.rua = rua; c.numero = numero; c.complemento = complemento;
+        c.bairro = bairro; c.cidade = cidade; c.uf = uf;
+
+        renderizarClientes(); 
+        abrirPerfil(id); 
+        alert("Dados atualizados com sucesso!");
+    });
+}
+
+function fecharPerfil() {
+    document.getElementById("modalPerfil").style.display = "none";
+}
+
+function imprimirFicha(id) {
+    let c = clientesGlobais.find(cliente => cliente.id === id);
+    if(!c) return;
+
+    db.collection("clientes").doc(id).collection("pagamentos").get()
+    .then(snapshot => {
+        let pagamentosHtml = "";
+        let totalPago = 0;
+
+        snapshot.forEach(doc => {
+            let p = doc.data();
+            let valNum = parseFloat(p.valor.replace(/\./g, '').replace(',', '.'));
+            if(!isNaN(valNum)) totalPago += valNum;
+            
+            pagamentosHtml += `<tr><td>${p.data}</td><td>R$ ${p.valor}</td><td>${p.pix || '-'}</td></tr>`;
+        });
+
+        if(pagamentosHtml === "") {
+            pagamentosHtml = "<tr><td colspan='3' style='text-align:center;'>Nenhum pagamento registrado.</td></tr>";
+        }
+
+        let totalFormatado = totalPago.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+
+        let textoEndereco = "Não informado";
+        if (c.rua || c.cep) {
+            let num = c.numero ? c.numero : "S/N";
+            let comp = c.complemento ? " - " + c.complemento : "";
+            textoEndereco = `${c.rua || ''}, ${num}${comp} <br> ${c.bairro || ''} - ${c.cidade || ''}/${c.uf || ''} <br> ${c.cep ? 'CEP: '+c.cep : ''}`;
+        }
+
+        let htmlImpresso = `
+            <div class="print-header">
+                <h2>Ficha de Cliente - Despachante</h2>
+                <h3>${c.nome}</h3>
+            </div>
+            
+            <div class="print-section">
+                <h4>Dados Pessoais</h4>
+                <p><strong>Telefone:</strong> ${c.telefone || 'Não informado'}</p>
+                <p><strong>Email:</strong> ${c.email || 'Não informado'}</p>
+                <p><strong>RG:</strong> ${c.rg || 'Não informado'} &nbsp;&nbsp;|&nbsp;&nbsp; <strong>CPF:</strong> ${c.cpf || 'Não informado'}</p>
+                <p><strong>Lotes / Serviços:</strong> ${c.lotes || 'Não informado'}</p>
+            </div>
+            
+            <div class="print-section">
+                <h4>Endereço Completo</h4>
+                <p>${textoEndereco}</p>
+            </div>
+            
+            <div class="print-section">
+                <h4>Histórico Financeiro</h4>
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Data</th>
+                            <th style="width: 30%;">Valor</th>
+                            <th style="width: 50%;">Observação / Destino Pix</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pagamentosHtml}
+                    </tbody>
+                </table>
+                <div class="print-total">
+                    Total Pago: R$ ${totalFormatado}
+                </div>
+            </div>
+        `;
+
+        document.getElementById("printArea").innerHTML = htmlImpresso;
+        window.print(); 
+    });
+}
+
+function deletar(id){
+  if(confirm("Tem certeza que deseja excluir este registro permanentemente?")){
+    db.collection("clientes").doc(id).delete().then(()=>{
+      carregarClientes();
+    });
+  }
+}
+
+function limpar(){
+  document.getElementById("nome").value="";
+  document.getElementById("telefone").value="";
+  document.getElementById("email").value="";
+  document.getElementById("rg").value="";
+  document.getElementById("cpf").value="";
+  document.getElementById("lotes").value="";
+  document.getElementById("cep").value="";
+  document.getElementById("rua").value="";
+  document.getElementById("numero").value="";
+  document.getElementById("complemento").value="";
+  document.getElementById("bairro").value="";
+  document.getElementById("cidade").value="";
+  document.getElementById("uf").value="";
+}
+</script>
+
+</body>
+</html>
